@@ -1,0 +1,2 @@
+ola mundo
+Este é um arquivo limpo, usado para testar o scanner.

@@ -1,0 +1,8 @@
+# Aula 0: só a biblioteca padrão do Python.
+# Cada aula que precisar de uma biblioteca nova adiciona ela aqui:
+#   Aula 4  -> pefile
+#   Aula 5  -> yara-python
+#   Aula 6  -> ppdeep
+#   Aula 9  -> watchdog
+#   Aula 10 -> psutil
+#   Aula 12 -> flask

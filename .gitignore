@@ -1,0 +1,11 @@
+# Ambiente virtual
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Amostras perigosas e quarentena NUNCA vão pro GitHub
+amostras/*
+!amostras/limpos/
+quarentena/
