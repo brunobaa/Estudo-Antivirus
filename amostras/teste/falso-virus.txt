@@ -1,0 +1,3 @@
+Este arquivo e INOFENSIVO.
+Ele existe so para testar o motor de hash do Super Antivirus.
+O hash dele esta na base de assinaturas como Teste.SuperAV.FalsoVirus.

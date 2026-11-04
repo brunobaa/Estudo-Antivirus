@@ -5,7 +5,9 @@
 __pycache__/
 *.pyc
 
-# Amostras perigosas e quarentena NUNCA vão pro GitHub
+# Amostras perigosas e quarentena NUNCA vão pro GitHub.
+# Só entram as pastas com arquivos que sabemos ser inofensivos.
 amostras/*
 !amostras/limpos/
+!amostras/teste/
 quarentena/

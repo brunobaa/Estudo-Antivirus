@@ -8,6 +8,7 @@ no resto do programa.
 
 from __future__ import annotations
 
+import hashlib
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import IntEnum
@@ -53,11 +54,13 @@ class Arquivo:
     """
 
     LIMITE_BYTES = 100 * 1024 * 1024  # não lê mais que 100 MB por arquivo
+    BLOCO_HASH = 1024 * 1024          # o hash lê o arquivo em pedaços de 1 MB
 
     def __init__(self, caminho: Path):
         self.caminho = Path(caminho)
         self.tamanho = self.caminho.stat().st_size
         self._dados: bytes | None = None
+        self._hashes: dict[str, str] = {}
 
     @property
     def dados(self) -> bytes:
@@ -65,6 +68,23 @@ class Arquivo:
             with open(self.caminho, "rb") as f:
                 self._dados = f.read(self.LIMITE_BYTES)
         return self._dados
+
+    def hash(self, algoritmo: str = "sha256") -> str:
+        """Hash do arquivo INTEIRO (ex: "md5", "sha1", "sha256"), calculado uma vez.
+
+        Lê em blocos, então funciona até com arquivos de vários GB sem
+        carregar tudo na memória.
+        """
+        if algoritmo not in self._hashes:
+            calculadora = hashlib.new(algoritmo)
+            if self._dados is not None and len(self._dados) == self.tamanho:
+                calculadora.update(self._dados)  # já está na memória
+            else:
+                with open(self.caminho, "rb") as f:
+                    while bloco := f.read(self.BLOCO_HASH):
+                        calculadora.update(bloco)
+            self._hashes[algoritmo] = calculadora.hexdigest()
+        return self._hashes[algoritmo]
 
 
 class Motor(ABC):

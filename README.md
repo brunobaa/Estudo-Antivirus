@@ -27,6 +27,8 @@ pip install -r requirements.txt
 python -m superav motores                     # lista os motores
 python -m superav escanear amostras           # escaneia uma pasta
 python -m superav escanear arquivo.exe --motores hash,yara
+python -m superav hash arquivo.exe              # mostra MD5, SHA-1 e SHA-256
+python -m superav adicionar-assinatura arquivo.exe --nome Nome.Da.Ameaca
 python -m superav escanear C:\Users\voce\Downloads --so-ameacas
 
 # 4. testes

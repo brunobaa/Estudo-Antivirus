@@ -1,0 +1,13 @@
+# Base de assinaturas do Super Antivírus
+# ---------------------------------------------------------------------------
+# Formato: <hash>  <nome da ameaça>
+# O algoritmo é descoberto pelo tamanho do hash:
+#   32 caracteres = MD5    40 = SHA-1    64 = SHA-256
+# Linhas começando com # são comentários. Todo arquivo .txt desta pasta é lido.
+# ---------------------------------------------------------------------------
+
+# Arquivo de teste padrão da indústria (https://www.eicar.org). Inofensivo.
+275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f  EICAR-Test-File
+
+# Nosso "falso vírus" inofensivo: amostras/teste/falso-virus.txt
+abb4e44c616e66a9a8cc30e41cfc3203567387d417c876d68c70eb42adbb15f8  Teste.SuperAV.FalsoVirus
