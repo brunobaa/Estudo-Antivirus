@@ -69,6 +69,16 @@ class Arquivo:
                 self._dados = f.read(self.LIMITE_BYTES)
         return self._dados
 
+    def cabecalho(self, tamanho: int = 4096) -> bytes:
+        """Só os primeiros bytes do arquivo, sem ler o resto.
+
+        Usado por motores que só precisam do "começo" (ex: magic bytes).
+        """
+        if self._dados is not None:
+            return self._dados[:tamanho]
+        with open(self.caminho, "rb") as f:
+            return f.read(tamanho)
+
     def hash(self, algoritmo: str = "sha256") -> str:
         """Hash do arquivo INTEIRO (ex: "md5", "sha1", "sha256"), calculado uma vez.
 

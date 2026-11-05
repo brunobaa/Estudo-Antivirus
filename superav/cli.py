@@ -3,6 +3,7 @@
     python -m superav escanear <arquivo-ou-pasta> [--motores hash,yara] [--so-ameacas]
     python -m superav motores
     python -m superav hash <arquivo>
+    python -m superav cabecalho <arquivo> [--bytes 64]
     python -m superav adicionar-assinatura <arquivo> --nome Nome.Da.Ameaca
 
 Código de saída (igual aos antivírus de verdade, útil em scripts):
@@ -21,6 +22,7 @@ from superav.core.registro import carregar_motores
 from superav.core.relatorio import imprimir_arquivo, imprimir_resumo
 from superav.core.scanner import escanear
 from superav.motores.hash import PASTA_ASSINATURAS, carregar_base
+from superav.motores.tipo import extensoes, identificar
 
 
 def _cmd_escanear(args: argparse.Namespace) -> int:
@@ -64,6 +66,31 @@ def _cmd_hash(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_cabecalho(args: argparse.Namespace) -> int:
+    """Mostra os primeiros bytes em hexadecimal, como um editor hex."""
+    arquivo = _abrir_arquivo(args.arquivo)
+    dados = arquivo.cabecalho(args.bytes)
+    real = identificar(arquivo.cabecalho(64))
+    ext, _ = extensoes(arquivo.caminho.name)
+
+    print(f"📄 {arquivo.caminho}  ({arquivo.tamanho} bytes)\n")
+    print("  posição  " + " ".join(f"{i:02X}" for i in range(16)) + "   texto")
+    for inicio in range(0, len(dados), 16):
+        linha = dados[inicio:inicio + 16]
+        hexa = " ".join(f"{b:02X}" for b in linha).ljust(47)
+        texto = "".join(chr(b) if 32 <= b < 127 else "." for b in linha)
+        print(f"  {inicio:08X} {hexa}   {texto}")
+
+    print(f"\n  extensão no nome: .{ext}" if ext else "\n  extensão no nome: (nenhuma)")
+    if real:
+        magic = " ".join(f"{b:02X}" for b in real.magic)
+        onde = f" na posição {real.deslocamento}" if real.deslocamento else ""
+        print(f"  tipo real:        {real.nome}  (magic bytes {magic}{onde})")
+    else:
+        print("  tipo real:        desconhecido (sem magic bytes da nossa tabela)")
+    return 0
+
+
 def _cmd_adicionar_assinatura(args: argparse.Namespace) -> int:
     arquivo = _abrir_arquivo(args.arquivo)
     valor = arquivo.hash("sha256")
@@ -104,6 +131,11 @@ def main(argv: list[str] | None = None) -> int:
     p_hash = sub.add_parser("hash", help="mostra o MD5, SHA-1 e SHA-256 de um arquivo")
     p_hash.add_argument("arquivo")
     p_hash.set_defaults(func=_cmd_hash)
+
+    p_cab = sub.add_parser("cabecalho", help="mostra os primeiros bytes (hex) e o tipo real")
+    p_cab.add_argument("arquivo")
+    p_cab.add_argument("--bytes", type=int, default=32, help="quantos bytes mostrar (padrão 32)")
+    p_cab.set_defaults(func=_cmd_cabecalho)
 
     p_ass = sub.add_parser("adicionar-assinatura", help="coloca o hash de um arquivo na base")
     p_ass.add_argument("arquivo")
