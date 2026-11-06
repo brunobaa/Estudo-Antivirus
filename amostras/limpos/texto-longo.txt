@@ -1,0 +1,9 @@
+A entropia mede o quanto um conteudo e imprevisivel. Num texto em portugues,
+algumas letras aparecem muito mais que outras: o "a", o "e" e o espaco sao
+muito comuns, enquanto o "k", o "w" e o "y" quase nunca aparecem. Por isso o
+texto e previsivel, e a entropia fica perto de 4 bits por byte.
+Ja um arquivo criptografado parece ruido: todos os 256 valores de byte aparecem
+com a mesma frequencia, e a entropia chega perto do maximo, 8 bits por byte.
+O motor de entropia do Super Antivirus usa essa diferenca para desconfiar de
+executaveis empacotados e de arquivos que foram sequestrados por um ransomware.
+Este arquivo e um exemplo de texto comum e deve passar limpo no scan.

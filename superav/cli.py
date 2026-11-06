@@ -4,6 +4,7 @@
     python -m superav motores
     python -m superav hash <arquivo>
     python -m superav cabecalho <arquivo> [--bytes 64]
+    python -m superav entropia <arquivo> [--linhas 16]
     python -m superav adicionar-assinatura <arquivo> --nome Nome.Da.Ameaca
 
 Código de saída (igual aos antivírus de verdade, útil em scripts):
@@ -13,6 +14,7 @@ Código de saída (igual aos antivírus de verdade, útil em scripts):
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 from pathlib import Path
 
@@ -22,6 +24,7 @@ from superav.core.registro import carregar_motores
 from superav.core.relatorio import imprimir_arquivo, imprimir_resumo
 from superav.core.scanner import escanear
 from superav.motores.hash import PASTA_ASSINATURAS, carregar_base
+from superav.motores.entropia import ALTA, TAMANHO_BLOCO, medir
 from superav.motores.tipo import extensoes, identificar
 
 
@@ -91,6 +94,33 @@ def _cmd_cabecalho(args: argparse.Namespace) -> int:
     return 0
 
 
+def _barra(valor: float, largura: int = 32) -> str:
+    cheio = round(valor / 8 * largura)
+    return "█" * cheio + "░" * (largura - cheio)
+
+
+def _cmd_entropia(args: argparse.Namespace) -> int:
+    """Desenha a entropia ao longo do arquivo, pedaço por pedaço."""
+    arquivo = _abrir_arquivo(args.arquivo)
+    medida = medir(arquivo.dados)
+    print(f"📄 {arquivo.caminho}  ({arquivo.tamanho} bytes)\n")
+    print(f"  entropia geral: {_barra(medida.geral)} {medida.geral:.2f} / 8 bits/byte\n")
+
+    if not medida.blocos:
+        return 0
+    # Junta os blocos em no máximo `--linhas` faixas, para caber na tela
+    por_linha = max(1, math.ceil(len(medida.blocos) / args.linhas))
+    print("  posição        entropia por trecho          (0 ─── 4 ─── 7.2 ─ 8)")
+    for i in range(0, len(medida.blocos), por_linha):
+        grupo = medida.blocos[i:i + por_linha]
+        valor = sum(grupo) / len(grupo)
+        alerta = "  ◄ parece aleatório" if valor >= ALTA else ""
+        print(f"  {i * TAMANHO_BLOCO:>10,}  {_barra(valor)} {valor:4.2f}{alerta}")
+    print(f"\n  cada linha = {por_linha * TAMANHO_BLOCO // 1024} KB;"
+          f" {medida.fracao_alta:.0%} dos trechos acima de {ALTA}")
+    return 0
+
+
 def _cmd_adicionar_assinatura(args: argparse.Namespace) -> int:
     arquivo = _abrir_arquivo(args.arquivo)
     valor = arquivo.hash("sha256")
@@ -136,6 +166,11 @@ def main(argv: list[str] | None = None) -> int:
     p_cab.add_argument("arquivo")
     p_cab.add_argument("--bytes", type=int, default=32, help="quantos bytes mostrar (padrão 32)")
     p_cab.set_defaults(func=_cmd_cabecalho)
+
+    p_ent = sub.add_parser("entropia", help="desenha a entropia do arquivo, trecho por trecho")
+    p_ent.add_argument("arquivo")
+    p_ent.add_argument("--linhas", type=int, default=16, help="máximo de linhas do gráfico")
+    p_ent.set_defaults(func=_cmd_entropia)
 
     p_ass = sub.add_parser("adicionar-assinatura", help="coloca o hash de um arquivo na base")
     p_ass.add_argument("arquivo")

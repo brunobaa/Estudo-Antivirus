@@ -29,6 +29,7 @@ python -m superav escanear amostras           # escaneia uma pasta
 python -m superav escanear arquivo.exe --motores hash,yara
 python -m superav hash arquivo.exe              # mostra MD5, SHA-1 e SHA-256
 python -m superav cabecalho arquivo.exe         # mostra os primeiros bytes e o tipo real
+python -m superav entropia arquivo.exe          # gráfico de entropia, trecho por trecho
 python -m superav adicionar-assinatura arquivo.exe --nome Nome.Da.Ameaca
 python -m superav escanear C:\Users\voce\Downloads --so-ameacas
 
