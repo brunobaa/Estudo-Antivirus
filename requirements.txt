@@ -6,3 +6,5 @@
 #   Aula 9  -> watchdog
 #   Aula 10 -> psutil
 #   Aula 12 -> flask
+# Aula 4: análise de executáveis do Windows (PE)
+pefile==2024.8.26

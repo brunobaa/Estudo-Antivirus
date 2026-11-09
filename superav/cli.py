@@ -5,6 +5,7 @@
     python -m superav hash <arquivo>
     python -m superav cabecalho <arquivo> [--bytes 64]
     python -m superav entropia <arquivo> [--linhas 16]
+    python -m superav pe <arquivo>
     python -m superav adicionar-assinatura <arquivo> --nome Nome.Da.Ameaca
 
 Código de saída (igual aos antivírus de verdade, útil em scripts):
@@ -121,6 +122,39 @@ def _cmd_entropia(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_pe(args: argparse.Namespace) -> int:
+    """Raio-X de um executável do Windows: seções, imports e veredito."""
+    import superav.motores.pe as mpe
+    from superav.core.relatorio import ROTULOS
+
+    if mpe.pefile is None:
+        print("erro: a biblioteca pefile não está instalada (pip install pefile)", file=sys.stderr)
+        return 3
+
+    arquivo = _abrir_arquivo(args.arquivo)
+    print(f"📄 {arquivo.caminho}  ({arquivo.tamanho:,} bytes)\n")
+
+    pe = mpe.pefile.PE(data=arquivo.dados, fast_load=True)
+    pe.parse_data_directories(
+        directories=[mpe.pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"]]
+    )
+    print("  seção        tam.(bytes)  entropia  flags (X=exec W=grava R=lê)")
+    for s in pe.sections:
+        nome = s.Name.rstrip(b"\x00").decode("latin-1", "replace")
+        f = s.Characteristics
+        marcas = ("X" if f & 0x20000000 else "-") + ("W" if f & 0x80000000 else "-") + ("R" if f & 0x40000000 else "-")
+        print(f"  {nome:<12} {s.SizeOfRawData:>10,}  {s.get_entropy():>7.2f}  {marcas}")
+
+    dlls = getattr(pe, "DIRECTORY_ENTRY_IMPORT", [])
+    total = sum(len(d.imports) for d in dlls)
+    print(f"\n  imports: {total} funções de {len(dlls)} DLLs")
+    pe.close()
+
+    resultado = mpe.MotorPE().analisar(arquivo)
+    print(f"\n  Veredito: {ROTULOS[resultado.veredito]}  {resultado.detalhe}")
+    return 0
+
+
 def _cmd_adicionar_assinatura(args: argparse.Namespace) -> int:
     arquivo = _abrir_arquivo(args.arquivo)
     valor = arquivo.hash("sha256")
@@ -166,6 +200,10 @@ def main(argv: list[str] | None = None) -> int:
     p_cab.add_argument("arquivo")
     p_cab.add_argument("--bytes", type=int, default=32, help="quantos bytes mostrar (padrão 32)")
     p_cab.set_defaults(func=_cmd_cabecalho)
+
+    p_pe = sub.add_parser("pe", help="raio-X de um executável do Windows (seções e imports)")
+    p_pe.add_argument("arquivo")
+    p_pe.set_defaults(func=_cmd_pe)
 
     p_ent = sub.add_parser("entropia", help="desenha a entropia do arquivo, trecho por trecho")
     p_ent.add_argument("arquivo")
