@@ -8,3 +8,5 @@
 #   Aula 12 -> flask
 # Aula 4: análise de executáveis do Windows (PE)
 pefile==2024.8.26
+# Aula 5: regras YARA
+yara-python==4.5.4

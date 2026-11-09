@@ -6,6 +6,7 @@
     python -m superav cabecalho <arquivo> [--bytes 64]
     python -m superav entropia <arquivo> [--linhas 16]
     python -m superav pe <arquivo>
+    python -m superav yara <arquivo>
     python -m superav adicionar-assinatura <arquivo> --nome Nome.Da.Ameaca
 
 Código de saída (igual aos antivírus de verdade, útil em scripts):
@@ -155,6 +156,39 @@ def _cmd_pe(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_yara(args: argparse.Namespace) -> int:
+    """Mostra quais regras YARA casaram e ONDE no arquivo cada trecho apareceu."""
+    import superav.motores.yara as myara
+    from superav.core.relatorio import ROTULOS
+
+    if myara.yara is None:
+        print("erro: a biblioteca yara-python não está instalada (pip install yara-python)", file=sys.stderr)
+        return 3
+
+    arquivo = _abrir_arquivo(args.arquivo)
+    regras, total = myara.compilar()
+    print(f"📄 {arquivo.caminho}  ({arquivo.tamanho:,} bytes)   {total} regras carregadas\n")
+
+    casadas = regras.match(data=arquivo.dados, timeout=10) if regras else []
+    if not casadas:
+        print("  nenhuma regra casou ✅")
+        return 0
+
+    for regra in casadas:
+        veredito = myara.severidade(regra)
+        print(f"  {ROTULOS[veredito]}  {regra.rule}")
+        if "descricao" in regra.meta:
+            print(f"      {regra.meta['descricao']}")
+        for achado in regra.strings:
+            for ocorrencia in achado.instances[:3]:
+                trecho = ocorrencia.matched_data[:40].decode("latin-1").replace("\n", " ")
+                print(f"      {achado.identifier:<8} posição {ocorrencia.offset:>6}  \"{trecho}\"")
+        if not regra.strings:
+            print("      (casou só pela condition, sem strings)")
+        print()
+    return 0
+
+
 def _cmd_adicionar_assinatura(args: argparse.Namespace) -> int:
     arquivo = _abrir_arquivo(args.arquivo)
     valor = arquivo.hash("sha256")
@@ -204,6 +238,10 @@ def main(argv: list[str] | None = None) -> int:
     p_pe = sub.add_parser("pe", help="raio-X de um executável do Windows (seções e imports)")
     p_pe.add_argument("arquivo")
     p_pe.set_defaults(func=_cmd_pe)
+
+    p_yara = sub.add_parser("yara", help="mostra quais regras YARA casaram e onde")
+    p_yara.add_argument("arquivo")
+    p_yara.set_defaults(func=_cmd_yara)
 
     p_ent = sub.add_parser("entropia", help="desenha a entropia do arquivo, trecho por trecho")
     p_ent.add_argument("arquivo")

@@ -1,0 +1,7 @@
+=== AMOSTRA DE TESTE INOFENSIVA DO SUPER ANTIVIRUS ===
+Este arquivo imita o TEXTO de uma nota de resgate, para treinar a regra YARA
+Nota_De_Resgate. Nada aqui foi criptografado e nao ha nenhum endereco real.
+
+Ola! Seus arquivos foram criptografados.
+Para recuperar, voce precisa pagar o resgate em bitcoin e receber a
+chave de descriptografia. (Exemplo ficticio, sem carteira e sem site.)
