@@ -32,6 +32,7 @@ python -m superav cabecalho arquivo.exe         # mostra os primeiros bytes e o 
 python -m superav entropia arquivo.exe          # gráfico de entropia, trecho por trecho
 python -m superav pe arquivo.exe                # raio-X de um executável do Windows
 python -m superav yara arquivo.exe              # quais regras YARA casaram e onde
+python -m superav fuzzy a.txt b.txt             # semelhança (ssdeep) entre dois arquivos
 python -m superav adicionar-assinatura arquivo.exe --nome Nome.Da.Ameaca
 python -m superav escanear C:\Users\voce\Downloads --so-ameacas
 

@@ -1,0 +1,9 @@
+# Base de assinaturas FUZZY (ssdeep) do Super Antivírus (Aula 6)
+# ---------------------------------------------------------------------------
+# Formato: <hash ssdeep>  <nome da família>
+# Um hash ssdeep tem 3 partes:  tamanho_do_bloco : hash_do_bloco : hash_do_bloco_dobrado
+# Este arquivo tem extensão .ssdeep para o motor de hash (Aula 1) não tentar ler.
+# ---------------------------------------------------------------------------
+
+# Só a versão 1 da família de teste. A v2 é detectada por SEMELHANÇA.
+96:Dg2G+qseZ6j57ngiQB9dqtA42QCZ0GNPE1yE/V+L8l3HrKjiBeGh/V2FY:vS6NrgHB9d0H2QByE/cljiBnhN2FY  Teste.SuperAV.Familia

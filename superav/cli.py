@@ -7,6 +7,7 @@
     python -m superav entropia <arquivo> [--linhas 16]
     python -m superav pe <arquivo>
     python -m superav yara <arquivo>
+    python -m superav fuzzy <arquivo> [<outro-arquivo>]
     python -m superav adicionar-assinatura <arquivo> --nome Nome.Da.Ameaca
 
 Código de saída (igual aos antivírus de verdade, útil em scripts):
@@ -189,8 +190,37 @@ def _cmd_yara(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_fuzzy(args: argparse.Namespace) -> int:
+    """Mostra o hash ssdeep; com 2 arquivos, mede a semelhança entre eles."""
+    import superav.motores.fuzzy as mfuzzy
+
+    if mfuzzy.ppdeep is None:
+        print("erro: a biblioteca ppdeep não está instalada (pip install ppdeep)", file=sys.stderr)
+        return 3
+
+    hashes = []
+    for caminho in args.arquivos:
+        arquivo = _abrir_arquivo(caminho)
+        valor = mfuzzy.ppdeep.hash(arquivo.dados)
+        hashes.append(valor)
+        print(f"📄 {arquivo.caminho}  ({arquivo.tamanho:,} bytes)")
+        print(f"   ssdeep  {valor}")
+        print(f"   sha256  {arquivo.hash()}\n")
+
+    if len(hashes) == 2:
+        nota = mfuzzy.ppdeep.compare(*hashes)
+        print(f"  semelhança: {_barra(nota / 100 * 8)} {nota}%")
+    else:
+        nota, familia = mfuzzy.mais_parecido(hashes[0], mfuzzy.carregar_base())
+        alvo = f" ({familia})" if familia else ""
+        print(f"  mais parecido na base: {_barra(nota / 100 * 8)} {nota}%{alvo}")
+    return 0
+
+
 def _cmd_adicionar_assinatura(args: argparse.Namespace) -> int:
     arquivo = _abrir_arquivo(args.arquivo)
+    if args.fuzzy:
+        return _adicionar_fuzzy(arquivo, args.nome)
     valor = arquivo.hash("sha256")
     destino = PASTA_ASSINATURAS / "minhas.txt"
     if valor in carregar_base().get("sha256", {}):
@@ -202,6 +232,27 @@ def _cmd_adicionar_assinatura(args: argparse.Namespace) -> int:
             f.write("# Assinaturas adicionadas com: python -m superav adicionar-assinatura\n")
         f.write(f"{valor}  {args.nome}\n")
     print(f"✅ assinatura adicionada em {destino.name}: {valor}  {args.nome}")
+    return 0
+
+
+def _adicionar_fuzzy(arquivo: Arquivo, nome: str) -> int:
+    import superav.motores.fuzzy as mfuzzy
+
+    if mfuzzy.ppdeep is None:
+        print("erro: a biblioteca ppdeep não está instalada (pip install ppdeep)", file=sys.stderr)
+        return 3
+    if arquivo.tamanho < mfuzzy.TAMANHO_MINIMO:
+        print(f"erro: arquivo pequeno demais para fuzzy (mínimo {mfuzzy.TAMANHO_MINIMO} bytes)",
+              file=sys.stderr)
+        return 3
+    valor = mfuzzy.ppdeep.hash(arquivo.dados)
+    destino = PASTA_ASSINATURAS / "minhas.ssdeep"
+    novo = not destino.exists()
+    with open(destino, "a", encoding="utf-8") as f:
+        if novo:
+            f.write("# Assinaturas fuzzy adicionadas com: adicionar-assinatura --fuzzy\n")
+        f.write(f"{valor}  {nome}\n")
+    print(f"✅ assinatura fuzzy adicionada em {destino.name}: {valor}  {nome}")
     return 0
 
 
@@ -243,6 +294,10 @@ def main(argv: list[str] | None = None) -> int:
     p_yara.add_argument("arquivo")
     p_yara.set_defaults(func=_cmd_yara)
 
+    p_fz = sub.add_parser("fuzzy", help="hash ssdeep; com 2 arquivos, mostra a semelhança")
+    p_fz.add_argument("arquivos", nargs="+", metavar="arquivo", help="1 ou 2 arquivos")
+    p_fz.set_defaults(func=_cmd_fuzzy)
+
     p_ent = sub.add_parser("entropia", help="desenha a entropia do arquivo, trecho por trecho")
     p_ent.add_argument("arquivo")
     p_ent.add_argument("--linhas", type=int, default=16, help="máximo de linhas do gráfico")
@@ -251,6 +306,7 @@ def main(argv: list[str] | None = None) -> int:
     p_ass = sub.add_parser("adicionar-assinatura", help="coloca o hash de um arquivo na base")
     p_ass.add_argument("arquivo")
     p_ass.add_argument("--nome", required=True, help="nome da ameaça (ex: Teste.Meu.Virus)")
+    p_ass.add_argument("--fuzzy", action="store_true", help="grava a assinatura ssdeep (Aula 6) em vez do sha256")
     p_ass.set_defaults(func=_cmd_adicionar_assinatura)
 
     args = parser.parse_args(argv)

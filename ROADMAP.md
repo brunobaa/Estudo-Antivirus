@@ -11,7 +11,7 @@ Uma aula por dia. Cada aula ensina um conceito e adiciona uma peça nova ao prog
  │ 3 Entropia              ✅   │     │ 11 Reputação online      │    │ 16 Análise de amostra real │
  │ 4 Estrutura PE (.exe)   ✅   │     │ 12 Painel web            │    └───────────────────────────┘
  │ 5 Regras YARA           ✅   │     └──────────────────────────┘
- │ 6 Hash por semelhança        │
+ │ 6 Hash por semelhança   ✅   │
  │ 7 Scripts e macros           │
  └──────────────────────────────┘
 ```
@@ -26,7 +26,7 @@ Uma aula por dia. Cada aula ensina um conceito e adiciona uma peça nova ao prog
 | 3 | Entropia | Motor `entropia`: detectar arquivo compactado/criptografado | ✅ |
 | 4 | Executáveis do Windows (PE) | Motor `pe`: seções e imports suspeitos (`pefile`) | ✅ |
 | 5 | Regras YARA | Motor `yara`: escrever e rodar regras próprias | ✅ |
-| 6 | Fuzzy hashing | Motor `fuzzy`: pegar variantes "parecidas" | ⏳ |
+| 6 | Fuzzy hashing | Motor `fuzzy`: pegar variantes "parecidas" | ✅ |
 | 7 | Scripts e macros | Motor `scripts`: PowerShell/JS ofuscado, macros | ⏳ |
 
 ## Módulo 2: Proteção ativa
