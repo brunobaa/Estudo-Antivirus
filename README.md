@@ -33,6 +33,7 @@ python -m superav entropia arquivo.exe          # gráfico de entropia, trecho p
 python -m superav pe arquivo.exe                # raio-X de um executável do Windows
 python -m superav yara arquivo.exe              # quais regras YARA casaram e onde
 python -m superav fuzzy a.txt b.txt             # semelhança (ssdeep) entre dois arquivos
+python -m superav script arquivo.ps1            # indícios de um script, com os pontos
 python -m superav adicionar-assinatura arquivo.exe --nome Nome.Da.Ameaca
 python -m superav escanear C:\Users\voce\Downloads --so-ameacas
 

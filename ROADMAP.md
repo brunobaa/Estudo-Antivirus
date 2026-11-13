@@ -12,7 +12,7 @@ Uma aula por dia. Cada aula ensina um conceito e adiciona uma peça nova ao prog
  │ 4 Estrutura PE (.exe)   ✅   │     │ 12 Painel web            │    └───────────────────────────┘
  │ 5 Regras YARA           ✅   │     └──────────────────────────┘
  │ 6 Hash por semelhança   ✅   │
- │ 7 Scripts e macros           │
+ │ 7 Scripts e macros      ✅   │
  └──────────────────────────────┘
 ```
 
@@ -27,7 +27,7 @@ Uma aula por dia. Cada aula ensina um conceito e adiciona uma peça nova ao prog
 | 4 | Executáveis do Windows (PE) | Motor `pe`: seções e imports suspeitos (`pefile`) | ✅ |
 | 5 | Regras YARA | Motor `yara`: escrever e rodar regras próprias | ✅ |
 | 6 | Fuzzy hashing | Motor `fuzzy`: pegar variantes "parecidas" | ✅ |
-| 7 | Scripts e macros | Motor `scripts`: PowerShell/JS ofuscado, macros | ⏳ |
+| 7 | Scripts e macros | Motor `scripts`: PowerShell/JS ofuscado, macros | ✅ |
 
 ## Módulo 2: Proteção ativa
 

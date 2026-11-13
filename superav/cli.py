@@ -8,6 +8,7 @@
     python -m superav pe <arquivo>
     python -m superav yara <arquivo>
     python -m superav fuzzy <arquivo> [<outro-arquivo>]
+    python -m superav script <arquivo>
     python -m superav adicionar-assinatura <arquivo> --nome Nome.Da.Ameaca
 
 Código de saída (igual aos antivírus de verdade, útil em scripts):
@@ -217,6 +218,30 @@ def _cmd_fuzzy(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_script(args: argparse.Namespace) -> int:
+    """Lista cada indício encontrado num script, com os pontos de cada um."""
+    from superav.core.pontuacao import MALICIOSO_A_PARTIR, SUSPEITO_A_PARTIR
+    from superav.core.relatorio import ROTULOS
+    from superav.motores.scripts import MotorScripts, analisar_texto, decodificar, e_script
+
+    arquivo = _abrir_arquivo(args.arquivo)
+    print(f"📄 {arquivo.caminho}  ({arquivo.tamanho:,} bytes)\n")
+    if not e_script(arquivo.caminho.name):
+        print("  (a extensão não é de script, mas vou analisar o texto mesmo assim)\n")
+
+    pontuacao = analisar_texto(decodificar(arquivo.dados))
+    if not pontuacao.sinais:
+        print("  nenhum indício encontrado")
+    for sinal in pontuacao.sinais:
+        print(f"  +{sinal.pontos}  {sinal.texto}")
+
+    total = pontuacao.pontos
+    print(f"\n  total: {total} pts   (🟡 a partir de {SUSPEITO_A_PARTIR}, 🚨 a partir de {MALICIOSO_A_PARTIR})")
+    resultado = MotorScripts().analisar(arquivo)
+    print(f"  Veredito do motor: {ROTULOS[resultado.veredito]}")
+    return 0
+
+
 def _cmd_adicionar_assinatura(args: argparse.Namespace) -> int:
     arquivo = _abrir_arquivo(args.arquivo)
     if args.fuzzy:
@@ -297,6 +322,10 @@ def main(argv: list[str] | None = None) -> int:
     p_fz = sub.add_parser("fuzzy", help="hash ssdeep; com 2 arquivos, mostra a semelhança")
     p_fz.add_argument("arquivos", nargs="+", metavar="arquivo", help="1 ou 2 arquivos")
     p_fz.set_defaults(func=_cmd_fuzzy)
+
+    p_scr = sub.add_parser("script", help="lista os indícios de um script e os pontos de cada um")
+    p_scr.add_argument("arquivo")
+    p_scr.set_defaults(func=_cmd_script)
 
     p_ent = sub.add_parser("entropia", help="desenha a entropia do arquivo, trecho por trecho")
     p_ent.add_argument("arquivo")

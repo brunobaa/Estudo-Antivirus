@@ -16,9 +16,9 @@ pendente em vez de quebrar o programa.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-
-from superav.core.motor import Arquivo, Motor, Resultado, Veredito
+from superav.core.motor import Arquivo, Motor, Resultado
+from superav.core.pontuacao import Pontuacao
+from superav.core.pontuacao import classificar as classificar_pontuacao
 from superav.core.registro import registrar
 
 try:
@@ -53,23 +53,9 @@ SECOES_DE_PACKER = {
 }
 
 
-@dataclass
-class SinalPE:
-    pontos: int
-    texto: str
-
-
-@dataclass
-class AnalisePE:
-    sinais: list[SinalPE] = field(default_factory=list)
-    resumo: dict = field(default_factory=dict)
-
-    def marcar(self, pontos: int, texto: str) -> None:
-        self.sinais.append(SinalPE(pontos, texto))
-
-    @property
-    def pontos(self) -> int:
-        return sum(s.pontos for s in self.sinais)
+# A pontuação agora mora no núcleo (core/pontuacao.py), porque o motor de
+# scripts (Aula 7) usa a mesma ideia. O nome antigo continua valendo.
+AnalisePE = Pontuacao
 
 
 def avaliar_imports(nomes: set[str], analise: AnalisePE) -> None:
@@ -109,15 +95,7 @@ def avaliar_secoes(secoes: list[tuple[str, float]], analise: AnalisePE) -> None:
 
 
 def classificar(analise: AnalisePE) -> Resultado:
-    pontos = analise.pontos
-    detalhes = "; ".join(s.texto for s in analise.sinais)
-    if pontos >= 6:
-        return Resultado(Veredito.MALICIOSO, f"{pontos} pts — {detalhes}")
-    if pontos >= 3:
-        return Resultado(Veredito.SUSPEITO, f"{pontos} pts — {detalhes}")
-    if analise.sinais:
-        return Resultado.limpo(f"{pontos} pts — indícios fracos: {detalhes}")
-    return Resultado.limpo("estrutura PE normal")
+    return classificar_pontuacao(analise, sem_sinais="estrutura PE normal")
 
 
 @registrar
